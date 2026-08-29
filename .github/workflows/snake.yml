@@ -1,15 +1,15 @@
-# パックマンが GitHub の草を食べるアニメーション SVG を自動生成します
-# 使っている Action: https://github.com/Platane/snk (人気なプロフィールREADMEの定番)
+# 🟡 パックマンが GitHub の草(コントリビューショングラフ)を食べるアニメーションSVGを生成します
+# 使用している Action: https://github.com/abozanona/pacman-contribution-graph
 # 生成物は output ブランチに push され、README から参照されます
 name: 🟡 Pac-Man が草を食べる
 
 on:
-  # 6時間ごとに最新の草を食べてもらう
   schedule:
-    - cron: "12 */6 * * *"
-  # 手動実行もできる (Actions タブから)
+    # 毎日1回、最新の草でアニメを作り直す(0分は他のワークフローが集中するため12分にずらす)
+    - cron: "12 0 * * *"
+  # Actions タブから手動実行もできる
   workflow_dispatch:
-  # master に push したときも再生成
+  # master に push したときも再生成する
   push:
     branches:
       - master
@@ -20,18 +20,17 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
-      - name: パックンに草を用意する (generate snake svg)
-        uses: Platane/snk/svg-only@v3
+      - name: パックンに最新の草を用意する (generate pacman svg)
+        uses: abozanona/pacman-contribution-graph@main
         with:
           github_user_name: ${{ github.repository_owner }}
-          outputs: |
-            dist/github-contribution-grid-snake.svg
-            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+          # 生成するゲーム(カンマ区切り)。パックンだけでOKなら pacman
+          games: 'pacman'
 
-      - name: 食べ終わった草を output ブランチに並べる
+      - name: できあがったSVGを output ブランチに並べる
         uses: crazy-max/ghaction-github-pages@v4
         with:
           target_branch: output
